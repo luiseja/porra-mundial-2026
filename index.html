@@ -125,6 +125,9 @@ function Nav(props) {
     ),
     h("button", {onClick:function(){setView("admin");}, style:{flex:1,padding:"10px 0",background:"none",border:"none",color:view==="admin"?"#f59e0b":"#4b6a8a",fontSize:11,fontWeight:700,display:"flex",flexDirection:"column",alignItems:"center",gap:1,cursor:"pointer"}},
       h("span",{style:{fontSize:18}},"⚙️"), "Admin"
+    ),
+    h("button",{onClick:function(){setView("info");},style:{flex:1,padding:"10px 0",background:"none",border:"none",color:view==="info"?"#f59e0b":"#4b6a8a",fontSize:11,fontWeight:700,display:"flex",flexDirection:"column",alignItems:"center",gap:1,cursor:"pointer"}},
+      h("span",{style:{fontSize:18}},"📋"), "Puntos"
     )
   );
 }
@@ -325,7 +328,7 @@ function AdminLogin(props) {
           onKeyDown:function(ev){if(ev.key==="Enter")tryLogin();},
           style:{width:"100%",padding:"11px 14px",borderRadius:8,border:"1px solid #2a3a4a",background:"#0d1117",color:"white",fontSize:15,marginBottom:12}}),
         h("button", {onClick:tryLogin, style:{width:"100%",padding:12,borderRadius:8,background:"#f59e0b",border:"none",fontWeight:700,fontSize:15,color:"#1a1a2e",cursor:"pointer"}}, "Entrar"),
-        h("p", {style:{color:"#4b6a8a",fontSize:11,textAlign:"center",marginTop:10}}, "Pass: mundial2026")
+        null
       )
     ),
     h(Nav, {view:view, setView:setView, setSel:setSel})
@@ -504,39 +507,42 @@ function App() {
 
   if(view==="info"){
     var pts=[
-      {ico:"⚽",title:"Fase de grupos",lines:["2 pts por acertar el signo (1, X, 2)","+ 1 pt adicional por resultado exacto"]},
-      {ico:"📊",title:"Clasificación de grupos",lines:["2 pts por acertar la posición de cada equipo en su grupo (1º, 2º, 3º, 4º)"]},
-      {ico:"1/16",title:"Clasificados para 1/16",lines:["5 pts por cada equipo clasificado acertado"]},
-      {ico:"1/8",title:"Clasificados para 1/8",lines:["10 pts por cada equipo clasificado acertado"]},
-      {ico:"1/4",title:"Clasificados para cuartos",lines:["20 pts por cada equipo clasificado acertado"]},
-      {ico:"1/2",title:"Clasificados para semifinales",lines:["40 pts por cada equipo clasificado acertado"]},
-      {ico:"🏟️",title:"Finalistas",lines:["40 pts por cada finalista acertado (independientemente de si gana)"]},
+      {ico:"⚽",title:"Fase de grupos",lines:["2 pts por acertar el signo (1/X/2)","+1 pt adicional por resultado exacto"]},
+      {ico:"📊",title:"Posición en grupos",lines:["2 pts por cada posición acertada en su grupo"]},
+      {ico:"1/16",title:"Clasificados para 1/16",lines:["5 pts por cada equipo acertado"]},
+      {ico:"1/8",title:"Clasificados para 1/8",lines:["10 pts por cada equipo acertado"]},
+      {ico:"1/4",title:"Clasificados para cuartos",lines:["20 pts por cada equipo acertado"]},
+      {ico:"1/2",title:"Clasificados para semis",lines:["40 pts por cada equipo acertado"]},
+      {ico:"🏟️",title:"Finalistas",lines:["40 pts por cada finalista acertado"]},
       {ico:"🏆",title:"Campeón",lines:["80 pts por acertar el campeón"]},
       {ico:"🥉",title:"3er puesto",lines:["20 pts por acertar el 3er clasificado"]},
-      {ico:"👟",title:"Botas (Goleadores)",lines:["15 pts — Bota de Oro (máximo goleador)","10 pts — Bota de Plata","5 pts — Bota de Bronce"]},
-      {ico:"🏅",title:"Balones (Mejor jugador)",lines:["15 pts — Balón de Oro","10 pts — Balón de Plata","5 pts — Balón de Bronce"]},
+      {ico:"👟",title:"Botas",lines:["15 pts — Bota de Oro","10 pts — Bota de Plata","5 pts — Bota de Bronce"]},
+      {ico:"🏅",title:"Balones",lines:["15 pts — Balón de Oro","10 pts — Balón de Plata","5 pts — Balón de Bronce"]}
     ];
-    return e("div",{style:{display:"flex",flexDirection:"column",minHeight:"100vh"}},
-      e("div",{style:{flex:1,overflowY:"auto"}},
-        e("div",{style:{background:"linear-gradient(135deg,#111827,#1e3a5f)",padding:"26px 16px 18px",textAlign:"center"}},
-          e("div",{style:{fontSize:40,marginBottom:4}},"📋"),
-          e("h1",{style:{color:"#f59e0b",fontSize:21,fontWeight:900,margin:0}},"Sistema de puntuación")
+    return h("div",{style:{display:"flex",flexDirection:"column",minHeight:"100vh"}},
+      h("div",{style:{flex:1,overflowY:"auto"}},
+        h("div",{style:{background:"linear-gradient(135deg,#111827,#1e3a5f)",padding:"26px 16px 18px",textAlign:"center"}},
+          h("div",{style:{fontSize:40,marginBottom:4}},"📋"),
+          h("h1",{style:{color:"#f59e0b",fontSize:21,fontWeight:900,margin:0}},"Sistema de puntuacion")
         ),
-        e("div",{style:{maxWidth:500,margin:"0 auto",padding:"12px 12px 80px"}},
-          pts.map(function(s){return e("div",{key:s.title,style:{background:"#161f2e",borderRadius:12,padding:"14px 16px",marginBottom:8}},
-            e("div",{style:{display:"flex",alignItems:"center",gap:10,marginBottom:8}},
-              e("span",{style:{fontSize:22}},(s.ico.length<=3?s.ico:"")),
-              s.ico.length>3&&e("span",{style:{background:"#1e3a5f",color:"#60a5fa",borderRadius:6,padding:"2px 8px",fontSize:12,fontWeight:700}},s.ico),
-              e("span",{style:{fontWeight:700,color:"#f5f5f5",fontSize:14}},s.title)
-            ),
-            s.lines.map(function(l,i){return e("div",{key:i,style:{display:"flex",alignItems:"flex-start",gap:8,marginBottom:4}},
-              e("span",{style:{color:"#f59e0b",fontSize:12,minWidth:6}},"•"),
-              e("span",{style:{color:"#c0d4e8",fontSize:13}},l)
-            );})
-          );})
+        h("div",{style:{maxWidth:500,margin:"0 auto",padding:"12px 12px 80px"}},
+          pts.map(function(s){
+            return h("div",{key:s.title,style:{background:"#161f2e",borderRadius:12,padding:"14px 16px",marginBottom:8}},
+              h("div",{style:{display:"flex",alignItems:"center",gap:10,marginBottom:8}},
+                s.ico.length<=4?h("span",{style:{fontSize:22}},s.ico):h("span",{style:{background:"#1e3a5f",color:"#60a5fa",borderRadius:6,padding:"2px 8px",fontSize:12,fontWeight:700}},s.ico),
+                h("span",{style:{fontWeight:700,color:"#f5f5f5",fontSize:14}},s.title)
+              ),
+              s.lines.map(function(l,i){
+                return h("div",{key:i,style:{display:"flex",alignItems:"flex-start",gap:8,marginBottom:4}},
+                  h("span",{style:{color:"#f59e0b",fontSize:12}},"•"),
+                  h("span",{style:{color:"#c0d4e8",fontSize:13}},l)
+                );
+              })
+            );
+          })
         )
       ),
-      e(Nav,{view:view,setView:setView,setSel:setSel})
+      h(Nav,{view:view,setView:setView,setSel:setSel})
     );
   }
   return null;
