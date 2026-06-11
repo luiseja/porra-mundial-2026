@@ -398,9 +398,7 @@ function AdminView(props) {
   var saveToGitHub = props.saveToGitHub;
   var dispatch = function(action) {
     props.dispatch(action);
-    // Compute new state by applying reducer directly, then save
-    var newAd = adR(ad, action);
-    setTimeout(function(){ saveToGitHub(newAd); }, 100);
+    props.markDirty();
   };
 
   var allKO = [
@@ -780,6 +778,17 @@ function App() {
     .catch(function(){});
   }, []);
 
+  // Dirty flag - set when admin makes changes
+  var dirtyRef = useRef(false);
+  function markDirty() { dirtyRef.current = true; }
+
+  // Save to GitHub when ad changes and dirty flag is set
+  useEffect(function() {
+    if(!dirtyRef.current) return;
+    dirtyRef.current = false;
+    saveToGitHub(ad);
+  }, [ad]);
+
   // Save to GitHub - only called explicitly by admin actions
   function saveToGitHub(newAd) {
     var ghToken = localStorage.getItem("porra_gh_token");
@@ -827,7 +836,7 @@ function App() {
   }
   if (view === "admin") {
     if (!adminAuth) return h(AdminLogin, {setAdminAuth:setAdminAuth, view:view, setView:setView, setSel:setSel});
-    return h(AdminView, {ad:ad, dispatch:dispatch, kr:kr, adminSection:adminSection, setAdminSection:setAdminSection, view:view, setView:setView, setSel:setSel, saveToGitHub:saveToGitHub});
+    return h(AdminView, {ad:ad, dispatch:dispatch, kr:kr, adminSection:adminSection, setAdminSection:setAdminSection, view:view, setView:setView, setSel:setSel, saveToGitHub:saveToGitHub, markDirty:markDirty});
   }
 
   if(view==="info"){
