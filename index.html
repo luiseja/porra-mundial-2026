@@ -107,7 +107,11 @@ function calcPts(pl, ad) {
 }
 
 function adR(state, action) {
-  if (action.type === "SET_MATCH") return Object.assign({}, state, {matches: Object.assign({}, state.matches, {[action.match]: action.value})});
+  if (action.type === "SET_MATCH") {
+    var newMatches = Object.assign({}, state.matches);
+    if(action.value === "") { delete newMatches[action.match]; } else { newMatches[action.match] = action.value; }
+    return Object.assign({}, state, {matches: newMatches});
+  }
   if (action.type === "SET_FIELD") return Object.assign({}, state, {[action.field]: action.value});
   if (action.type === "SET_GP") {
     var gp = Object.assign({}, state.groupPositions);
@@ -395,9 +399,9 @@ function AdminView(props) {
         var saved = ad.matches[match] || "";
         return h("div", {key:match, style:{display:"flex",alignItems:"center",padding:"7px 12px",borderBottom:i<AM.length-1?"1px solid #1e2a3a":"none",gap:8}},
           h("div", {style:{flex:1,fontSize:11,color:saved?"#22c55e":"#c0d4e8"}}, match + (saved ? " · " + saved : "")),
-          h("input", {defaultValue:saved, placeholder:"0-0",
-            onBlur:function(ev){if(ev.target.value.trim())dispatch({type:"SET_MATCH",match:match,value:ev.target.value.trim()});},
-            onKeyDown:function(ev){if(ev.key==="Enter"&&ev.target.value.trim())dispatch({type:"SET_MATCH",match:match,value:ev.target.value.trim()});},
+          h("input", {value:saved||"", placeholder:"0-0",
+            onChange:function(ev){dispatch({type:"SET_MATCH",match:match,value:ev.target.value});},
+            onKeyDown:function(ev){if(ev.key==="Enter")ev.target.blur();},
             style:{width:52,padding:"4px 6px",borderRadius:6,border:"1px solid #2a3a4a",background:"#0d1117",color:"white",fontSize:12,textAlign:"center"}})
         );
       })
