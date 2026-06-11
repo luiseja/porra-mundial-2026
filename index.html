@@ -746,12 +746,14 @@ function App() {
     .then(function(data){
       if(data && typeof data === "object" && !data.message) {
         loadedRef.current = true;
+        console.log("LOAD: dispatching with", Object.keys(data.matches||{}).length, "matches");
         dispatch({type:"LOAD", data:data});
       } else {
         loadedRef.current = true;
+        console.log("LOAD: no valid data", data);
       }
     })
-    .catch(function(){ loadedRef.current = true; });
+    .catch(function(e){ loadedRef.current = true; console.log("LOAD error:", e); });
   }, []);
 
   // Save to GitHub - only called explicitly by admin actions
