@@ -371,11 +371,11 @@ function AdminView(props) {
   var adminSection = props.adminSection; var setAdminSection = props.setAdminSection;
   var view = props.view; var setView = props.setView; var setSel = props.setSel;
   var saveToGitHub = props.saveToGitHub;
-  var adRef = useRef(ad);
-  useEffect(function(){ adRef.current = ad; }, [ad]);
   var dispatch = function(action) {
     props.dispatch(action);
-    setTimeout(function(){ saveToGitHub(adRef.current); }, 300);
+    // Compute new state by applying reducer directly, then save
+    var newAd = adR(ad, action);
+    setTimeout(function(){ saveToGitHub(newAd); }, 100);
   };
 
   var allKO = [
@@ -757,7 +757,8 @@ function App() {
   // Save to GitHub - only called explicitly by admin actions
   function saveToGitHub(newAd) {
     var ghToken = localStorage.getItem("porra_gh_token");
-    if(!ghToken) return;
+    if(!ghToken) { console.log("saveToGitHub: no token"); return; }
+    console.log("saveToGitHub: saving...", Object.keys(newAd.matches||{}).length, "matches");
     fetch(GH_API, {headers:{"Authorization":"token "+ghToken}})
     .then(function(r){return r.json();})
     .then(function(fileInfo){
