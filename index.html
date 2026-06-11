@@ -813,10 +813,12 @@ function App() {
       return r.json();
     })
     .then(function(res){
-      if(res.content) {
-        if(el){ el.textContent = "✅ Guardado en GitHub"; el.style.color="#22c55e"; setTimeout(function(){el.textContent="";},3000); }
+      // Log full response for debugging
+      console.log("GitHub PUT response:", JSON.stringify(res).slice(0,200));
+      if(res.content || res.commit) {
+        if(el){ el.textContent = "✅ Guardado en GitHub (SHA:"+((res.content&&res.content.sha)||"?").slice(0,8)+")"; el.style.color="#22c55e"; setTimeout(function(){el.textContent="";},5000); }
       } else {
-        throw new Error("No content in response: "+JSON.stringify(res).slice(0,100));
+        if(el){ el.textContent = "⚠️ Respuesta: "+JSON.stringify(res).slice(0,80); el.style.color="#f59e0b"; }
       }
     })
     .catch(function(err){
