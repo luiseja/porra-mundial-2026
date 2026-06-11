@@ -738,14 +738,15 @@ function App() {
   var GH_RAW = "https://raw.githubusercontent.com/luiseja/porra-mundial-2026/main/data.json?t=";
   var GH_API = "https://api.github.com/repos/luiseja/porra-mundial-2026/contents/data.json";
 
-  // Load from GitHub on mount - use useState to force re-render
+  // Load from GitHub API (public, no token, bypasses CDN cache)
   var ghLoaded = useState(false); var setGhLoaded = ghLoaded[1];
   useEffect(function() {
-    fetch(GH_RAW + Date.now())
+    fetch(GH_API, {cache:"no-store"})
     .then(function(r){return r.json();})
-    .then(function(data){
-      if(data && typeof data === "object" && !data.message) {
-        dispatch({type:"LOAD", data:data});
+    .then(function(fileInfo){
+      if(fileInfo && fileInfo.content) {
+        var decoded = JSON.parse(decodeURIComponent(escape(atob(fileInfo.content.replace(/\n/g,"")))));
+        dispatch({type:"LOAD", data:decoded});
         setGhLoaded(true);
       }
     })
