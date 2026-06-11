@@ -733,27 +733,23 @@ function App() {
   var dt = useState("partidos"); var dTab = dt[0]; var setDTab = dt[1];
   var ar = useReducer(adR, INIT);
   var ad = ar[0]; var dispatch = ar[1];
-  var loadedRef = useRef(false);
   var kr = ad.knockoutResults || {};
   var saveTimer = useRef(null);
   var GH_RAW = "https://raw.githubusercontent.com/luiseja/porra-mundial-2026/main/data.json?t=";
   var GH_API = "https://api.github.com/repos/luiseja/porra-mundial-2026/contents/data.json";
 
-  // Load from GitHub on mount
+  // Load from GitHub on mount - use useState to force re-render
+  var ghLoaded = useState(false); var setGhLoaded = ghLoaded[1];
   useEffect(function() {
     fetch(GH_RAW + Date.now())
     .then(function(r){return r.json();})
     .then(function(data){
       if(data && typeof data === "object" && !data.message) {
-        loadedRef.current = true;
-        console.log("LOAD: dispatching with", Object.keys(data.matches||{}).length, "matches");
         dispatch({type:"LOAD", data:data});
-      } else {
-        loadedRef.current = true;
-        console.log("LOAD: no valid data", data);
+        setGhLoaded(true);
       }
     })
-    .catch(function(e){ loadedRef.current = true; console.log("LOAD error:", e); });
+    .catch(function(){});
   }, []);
 
   // Save to GitHub - only called explicitly by admin actions
