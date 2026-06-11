@@ -370,6 +370,25 @@ function AdminLogin(props) {
   );
 }
 
+function MatchInput(props) {
+  var match = props.match, saved = props.saved, dispatch = props.dispatch;
+  var ls = useState(saved||""); var localVal = ls[0]; var setLocalVal = ls[1];
+  // Sync if saved changes externally (e.g. after load)
+  useEffect(function(){ setLocalVal(saved||""); }, [saved]);
+  function commit(val) {
+    var v = val.trim();
+    dispatch({type:"SET_MATCH", match:match, value:v});
+  }
+  return h("div", {style:{display:"flex",alignItems:"center",padding:"7px 12px",gap:8}},
+    h("div", {style:{flex:1,fontSize:11,color:saved?"#22c55e":"#c0d4e8"}}, match + (saved ? " · " + saved : "")),
+    h("input", {value:localVal, placeholder:"0-0",
+      onChange:function(ev){setLocalVal(ev.target.value);},
+      onBlur:function(ev){commit(ev.target.value);},
+      onKeyDown:function(ev){if(ev.key==="Enter"){commit(ev.target.value);ev.target.blur();}},
+      style:{width:52,padding:"4px 6px",borderRadius:6,border:"1px solid #2a3a4a",background:"#0d1117",color:"white",fontSize:12,textAlign:"center"}})
+  );
+}
+
 function AdminView(props) {
   var ad = props.ad; var kr = props.kr;
   var adminSection = props.adminSection; var setAdminSection = props.setAdminSection;
@@ -397,13 +416,7 @@ function AdminView(props) {
       h("div", {style:{padding:"9px 14px",borderBottom:"1px solid #1e2a3a",color:"#60a5fa",fontSize:11}}, "Resultado (ej: 1-0). Enter o clic fuera guarda."),
       AM.map(function(match, i) {
         var saved = ad.matches[match] || "";
-        return h("div", {key:match, style:{display:"flex",alignItems:"center",padding:"7px 12px",borderBottom:i<AM.length-1?"1px solid #1e2a3a":"none",gap:8}},
-          h("div", {style:{flex:1,fontSize:11,color:saved?"#22c55e":"#c0d4e8"}}, match + (saved ? " · " + saved : "")),
-          h("input", {value:saved||"", placeholder:"0-0",
-            onChange:function(ev){dispatch({type:"SET_MATCH",match:match,value:ev.target.value});},
-            onKeyDown:function(ev){if(ev.key==="Enter")ev.target.blur();},
-            style:{width:52,padding:"4px 6px",borderRadius:6,border:"1px solid #2a3a4a",background:"#0d1117",color:"white",fontSize:12,textAlign:"center"}})
-        );
+        return h(MatchInput, {key:match, match:match, saved:saved, dispatch:dispatch});
       })
     );
   } else if (adminSection === "grupos") {
