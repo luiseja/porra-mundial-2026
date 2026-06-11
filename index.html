@@ -397,8 +397,9 @@ function AdminView(props) {
   var view = props.view; var setView = props.setView; var setSel = props.setSel;
   var saveToGitHub = props.saveToGitHub;
   var dispatch = function(action) {
+    var newAd = adR(ad, action);
     props.dispatch(action);
-    props.markDirty();
+    props.markDirty(newAd);
   };
 
   var allKO = [
@@ -778,18 +779,12 @@ function App() {
     .catch(function(){});
   }, []);
 
-  // Dirty flag - set when admin makes changes
-  var dirtyRef = useRef(false);
-  function markDirty() { dirtyRef.current = true; }
+  // markDirty: called by AdminView dispatch, receives the new state directly
+  function markDirty(newAd) {
+    saveToGitHub(newAd);
+  }
 
-  // Save to GitHub when ad changes and dirty flag is set
-  useEffect(function() {
-    if(!dirtyRef.current) return;
-    dirtyRef.current = false;
-    saveToGitHub(ad);
-  }, [ad]);
-
-  // Save to GitHub - only called explicitly by admin actions
+  // Save to GitHub - receives exact new state, no React state involved
   function saveToGitHub(newAd) {
     var ghToken = localStorage.getItem("porra_gh_token");
     if(!ghToken) { console.log("saveToGitHub: no token"); return; }
