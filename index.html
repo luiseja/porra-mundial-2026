@@ -787,11 +787,19 @@ function App() {
   // Save to GitHub - receives exact new state, no React state involved
   function saveToGitHub(newAd) {
     var ghToken = localStorage.getItem("porra_gh_token");
-    if(!ghToken) { console.log("saveToGitHub: no token"); return; }
-    console.log("saveToGitHub: saving...", Object.keys(newAd.matches||{}).length, "matches");
+    var el = document.getElementById("gh_save_status");
+    if(!ghToken) {
+      if(el){ el.textContent = "❌ Sin token"; el.style.color="#ef4444"; }
+      return;
+    }
+    if(el){ el.textContent = "⏳ Guardando..."; el.style.color="#f59e0b"; }
     fetch(GH_API, {headers:{"Authorization":"token "+ghToken}})
-    .then(function(r){return r.json();})
+    .then(function(r){
+      if(!r.ok) throw new Error("GET SHA failed: "+r.status);
+      return r.json();
+    })
     .then(function(fileInfo){
+      if(!fileInfo.sha) throw new Error("No SHA: "+JSON.stringify(fileInfo).slice(0,100));
       var sha = fileInfo.sha;
       var content = btoa(unescape(encodeURIComponent(JSON.stringify(newAd))));
       return fetch(GH_API, {
@@ -800,17 +808,19 @@ function App() {
         body: JSON.stringify({message:"Update results",content:content,sha:sha})
       });
     })
-    .then(function(r){return r.json();})
+    .then(function(r){
+      if(!r.ok) throw new Error("PUT failed: "+r.status);
+      return r.json();
+    })
     .then(function(res){
       if(res.content) {
-        // Update saved indicator
-        var el = document.getElementById("gh_save_status");
         if(el){ el.textContent = "✅ Guardado en GitHub"; el.style.color="#22c55e"; setTimeout(function(){el.textContent="";},3000); }
+      } else {
+        throw new Error("No content in response: "+JSON.stringify(res).slice(0,100));
       }
     })
-    .catch(function(){
-      var el = document.getElementById("gh_save_status");
-      if(el){ el.textContent = "❌ Error al guardar"; el.style.color="#ef4444"; }
+    .catch(function(err){
+      if(el){ el.textContent = "❌ "+err.message; el.style.color="#ef4444"; }
     });
   }
 
