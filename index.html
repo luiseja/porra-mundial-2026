@@ -64,13 +64,13 @@ function calcPts(pl, ad) {
     var m = AM[i]; var real = ad.matches[m]; var pred = pl.matches[m];
     if (!real || !pred) continue;
     var rs = getSign(real); if (!rs) continue;
-    if (pred.sign === rs) { p += 2; b.partidos += 2; if (pred.score === real) { p++; b.partidos++; } }
+    if (pred.sign === rs) { p += 4; b.partidos += 4; if (pred.score === real) { p += 2; b.partidos += 2; } }
   }
   if (ad.groupsDone) {
     GS.forEach(function(g) {
       var rp = (ad.groupPositions && ad.groupPositions[g]) || [];
       var pp = (pl.gp && pl.gp[g]) || [];
-      for (var i = 0; i < 4; i++) { if (rp[i] && pp[i] && rp[i] === pp[i]) { p += 2; b.posiciones += 2; } }
+      for (var i = 0; i < 4; i++) { if (rp[i] && pp[i] && rp[i] === pp[i]) { p += 4; b.posiciones += 4; } }
     });
   }
   var kr = ad.knockoutResults || {};
@@ -82,18 +82,18 @@ function calcPts(pl, ad) {
   (pl.qf || []).forEach(function(t) { if (rQF.indexOf(t) >= 0) { p += 20; b.qf += 20; } });
   var rSF = QFB.map(function(b) { return kr[b.n]; }).filter(Boolean);
   (pl.sf || []).forEach(function(t) { if (rSF.indexOf(t) >= 0) { p += 40; b.sf += 40; } });
-  (pl.final || []).forEach(function(t) { if (t === kr[101] || t === kr[102]) { p += 40; b.final_ += 40; } });
-  if (kr[104] && pl.champion === kr[104]) { p += 80; b.campeon += 80; }
-  if (ad.thirdDone && kr[103] && pl.third === kr[103]) { p += 20; b.tercero += 20; }
+  (pl.final || []).forEach(function(t) { if (t === kr[101] || t === kr[102]) { p += 80; b.final_ += 80; } });
+  if (kr[104] && pl.champion === kr[104]) { p += 160; b.campeon += 160; }
+  if (ad.thirdDone && kr[103] && pl.third === kr[103]) { p += 40; b.tercero += 40; }
   if (ad.bootsDone) {
-    if (pl.goldenBoot === ad.goldenBoot) { p += 15; b.botas += 15; }
-    if (pl.silverBoot === ad.silverBoot) { p += 10; b.botas += 10; }
-    if (pl.bronzeBoot === ad.bronzeBoot) { p += 5; b.botas += 5; }
+    if (pl.goldenBoot === ad.goldenBoot) { p += 30; b.botas += 30; }
+    if (pl.silverBoot === ad.silverBoot) { p += 20; b.botas += 20; }
+    if (pl.bronzeBoot === ad.bronzeBoot) { p += 10; b.botas += 10; }
   }
   if (ad.ballsDone) {
-    if (pl.goldenBall === ad.goldenBall) { p += 15; b.balones += 15; }
-    if (pl.silverBall === ad.silverBall) { p += 10; b.balones += 10; }
-    if (pl.bronzeBall === ad.bronzeBall) { p += 5; b.balones += 5; }
+    if (pl.goldenBall === ad.goldenBall) { p += 30; b.balones += 30; }
+    if (pl.silverBall === ad.silverBall) { p += 20; b.balones += 20; }
+    if (pl.bronzeBall === ad.bronzeBall) { p += 10; b.balones += 10; }
   }
   return {total: p, breakdown: b};
 }
@@ -254,7 +254,7 @@ function DetailView(props) {
       {label:"1/8 (10 pts)",pred:pl.r16,real:rR16,known:rR16.length>0},
       {label:"Cuartos (20 pts)",pred:pl.qf,real:rQF,known:rQF.length>0},
       {label:"Semis (40 pts)",pred:pl.sf,real:rSF,known:rSF.length>0},
-      {label:"Finalistas (40 pts)",pred:pl.final,real:[kr[101],kr[102]].filter(Boolean),known:!!(kr[101]||kr[102])}
+      {label:"Finalistas (80 pts)",pred:pl.final,real:[kr[101],kr[102]].filter(Boolean),known:!!(kr[101]||kr[102])}
     ];
     tabContent = h("div", {style:{marginBottom:80}},
       elimSections.map(function(x) {
@@ -271,14 +271,14 @@ function DetailView(props) {
     );
   } else if (dTab === "premios") {
     var premiosList = [
-      {label:"🏆 Campeón (80 pts)",pred:pl.champion,real:kr[104],done:!!kr[104]},
-      {label:"🥉 3er puesto (20 pts)",pred:pl.third,real:kr[103],done:ad.thirdDone&&!!kr[103]},
-      {label:"👟 Bota Oro (15)",pred:pl.goldenBoot,real:ad.goldenBoot,done:ad.bootsDone},
-      {label:"👟 Bota Plata (10)",pred:pl.silverBoot,real:ad.silverBoot,done:ad.bootsDone},
-      {label:"👟 Bota Bronce (5)",pred:pl.bronzeBoot,real:ad.bronzeBoot,done:ad.bootsDone},
-      {label:"🏅 Balón Oro (15)",pred:pl.goldenBall,real:ad.goldenBall,done:ad.ballsDone},
-      {label:"🏅 Balón Plata (10)",pred:pl.silverBall,real:ad.silverBall,done:ad.ballsDone},
-      {label:"🏅 Balón Bronce (5)",pred:pl.bronzeBall,real:ad.bronzeBall,done:ad.ballsDone}
+      {label:"🏆 Campeón (160 pts)",pred:pl.champion,real:kr[104],done:!!kr[104]},
+      {label:"🥉 3er puesto (40 pts)",pred:pl.third,real:kr[103],done:ad.thirdDone&&!!kr[103]},
+      {label:"👟 Bota Oro (30)",pred:pl.goldenBoot,real:ad.goldenBoot,done:ad.bootsDone},
+      {label:"👟 Bota Plata (20)",pred:pl.silverBoot,real:ad.silverBoot,done:ad.bootsDone},
+      {label:"👟 Bota Bronce (10)",pred:pl.bronzeBoot,real:ad.bronzeBoot,done:ad.bootsDone},
+      {label:"🏅 Balón Oro (30)",pred:pl.goldenBall,real:ad.goldenBall,done:ad.ballsDone},
+      {label:"🏅 Balón Plata (20)",pred:pl.silverBall,real:ad.silverBall,done:ad.ballsDone},
+      {label:"🏅 Balón Bronce (10)",pred:pl.bronzeBall,real:ad.bronzeBall,done:ad.ballsDone}
     ];
     tabContent = h("div", {style:{background:"#161f2e",borderRadius:12,padding:"14px 16px",marginBottom:80}},
       premiosList.map(function(x) {
@@ -507,17 +507,17 @@ function App() {
 
   if(view==="info"){
     var pts=[
-      {ico:"⚽",title:"Fase de grupos",lines:["2 pts por acertar el signo (1/X/2)","+1 pt adicional por resultado exacto"]},
-      {ico:"📊",title:"Posición en grupos",lines:["2 pts por cada posición acertada en su grupo"]},
-      {ico:"1/16",title:"Clasificados para 1/16",lines:["5 pts por cada equipo acertado"]},
-      {ico:"1/8",title:"Clasificados para 1/8",lines:["10 pts por cada equipo acertado"]},
-      {ico:"1/4",title:"Clasificados para cuartos",lines:["20 pts por cada equipo acertado"]},
-      {ico:"1/2",title:"Clasificados para semis",lines:["40 pts por cada equipo acertado"]},
-      {ico:"🏟️",title:"Finalistas",lines:["40 pts por cada finalista acertado"]},
-      {ico:"🏆",title:"Campeón",lines:["80 pts por acertar el campeón"]},
-      {ico:"🥉",title:"3er puesto",lines:["20 pts por acertar el 3er clasificado"]},
-      {ico:"👟",title:"Botas",lines:["15 pts — Bota de Oro","10 pts — Bota de Plata","5 pts — Bota de Bronce"]},
-      {ico:"🏅",title:"Balones",lines:["15 pts — Balón de Oro","10 pts — Balón de Plata","5 pts — Balón de Bronce"]}
+      {ico:"⚽",title:"Fase de grupos",lines:["4 pts por acertar el signo (1/X/2)","+2 pts adicionales por resultado exacto"]},
+      {ico:"📊",title:"Posición en grupos",lines:["4 pts por cada posición acertada de equipo en su grupo"]},
+      {ico:"1/16",title:"Clasificados para 1/16",lines:["5 pts por cada equipo clasificado acertado"]},
+      {ico:"1/8",title:"Clasificados para 1/8",lines:["10 pts por cada equipo clasificado acertado"]},
+      {ico:"1/4",title:"Clasificados para cuartos",lines:["20 pts por cada equipo clasificado acertado"]},
+      {ico:"1/2",title:"Clasificados para semis",lines:["40 pts por cada equipo clasificado acertado"]},
+      {ico:"🏟️",title:"Finalistas",lines:["80 pts por cada finalista acertado"]},
+      {ico:"🏆",title:"Campeón",lines:["160 pts por acertar el campeón"]},
+      {ico:"🥉",title:"3er puesto",lines:["40 pts por acertar el 3er clasificado"]},
+      {ico:"👟",title:"Botas",lines:["30 pts — Bota de Oro","20 pts — Bota de Plata","10 pts — Bota de Bronce"]},
+      {ico:"🏅",title:"Balones",lines:["30 pts — Balón de Oro","20 pts — Balón de Plata","10 pts — Balón de Bronce"]}
     ];
     return h("div",{style:{display:"flex",flexDirection:"column",minHeight:"100vh"}},
       h("div",{style:{flex:1,overflowY:"auto"}},
