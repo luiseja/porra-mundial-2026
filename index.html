@@ -367,9 +367,16 @@ function AdminLogin(props) {
 }
 
 function AdminView(props) {
-  var ad = props.ad; var dispatch = props.dispatch; var kr = props.kr;
+  var ad = props.ad; var kr = props.kr;
   var adminSection = props.adminSection; var setAdminSection = props.setAdminSection;
   var view = props.view; var setView = props.setView; var setSel = props.setSel;
+  var saveToGitHub = props.saveToGitHub;
+  var adRef = useRef(ad);
+  useEffect(function(){ adRef.current = ad; }, [ad]);
+  var dispatch = function(action) {
+    props.dispatch(action);
+    setTimeout(function(){ saveToGitHub(adRef.current); }, 300);
+  };
 
   var allKO = [
     {label:"1/16 de final", games:Array.from({length:16},function(_,i){return{n:73+i};})},
@@ -533,7 +540,7 @@ function AdminView(props) {
   return h("div", {style:{display:"flex",flexDirection:"column",minHeight:"100vh"}},
     h("div", {style:{flex:1,overflowY:"auto",maxWidth:500,margin:"0 auto",width:"100%",padding:"0 12px"}},
       h("div", {style:{display:"flex",alignItems:"center",padding:"14px 0",gap:10}},
-        h("h2", {style:{flex:1,color:"#f59e0b",margin:0,fontSize:18}}, "⚙️ Admin"),
+        h("div",{style:{flex:1}},h("h2", {style:{color:"#f59e0b",margin:0,fontSize:18}}, "⚙️ Admin"),h("div",{id:"gh_save_status",style:{fontSize:10,color:"#22c55e",height:14}})),
         h("button", {onClick:function(){if(window.confirm("¿Borrar todo?"))dispatch({type:"RESET"});}, style:{background:"#ef444422",border:"1px solid #ef4444",color:"#ef4444",borderRadius:8,padding:"5px 10px",fontSize:11,cursor:"pointer"}}, "Reset")
       ),
       h("div", {style:{display:"flex",gap:6,marginBottom:12}},
@@ -727,48 +734,54 @@ function App() {
   var ar = useReducer(adR, INIT);
   var ad = ar[0]; var dispatch = ar[1];
   var loadedRef = useRef(false);
-  var saving = useRef(false);
   var kr = ad.knockoutResults || {};
-
   var saveTimer = useRef(null);
   var GH_RAW = "https://raw.githubusercontent.com/luiseja/porra-mundial-2026/main/data.json?t=";
   var GH_API = "https://api.github.com/repos/luiseja/porra-mundial-2026/contents/data.json";
 
-  // Load from GitHub on mount (public read, no token needed)
+  // Load from GitHub on mount
   useEffect(function() {
-    if(loadedRef.current) return;
-    loadedRef.current = true;
     fetch(GH_RAW + Date.now())
     .then(function(r){return r.json();})
     .then(function(data){
-      if(data && typeof data === "object") {
+      if(data && typeof data === "object" && !data.message) {
+        loadedRef.current = true;
         dispatch({type:"LOAD", data:data});
+      } else {
+        loadedRef.current = true;
       }
     })
-    .catch(function(){});
+    .catch(function(){ loadedRef.current = true; });
   }, []);
 
-  // Save to GitHub on every change (debounced 2s) - token stored locally on admin device
-  useEffect(function() {
-    if(!loadedRef.current) return;
-    if(saveTimer.current) clearTimeout(saveTimer.current);
-    saveTimer.current = setTimeout(function() {
-      var ghToken = localStorage.getItem("porra_gh_token");
-      if(!ghToken) return;
-      fetch(GH_API, {headers:{"Authorization":"token "+ghToken}})
-      .then(function(r){return r.json();})
-      .then(function(fileInfo){
-        var sha = fileInfo.sha;
-        var content = btoa(unescape(encodeURIComponent(JSON.stringify(ad))));
-        return fetch(GH_API, {
-          method: "PUT",
-          headers: {"Authorization":"token "+ghToken,"Content-Type":"application/json"},
-          body: JSON.stringify({message:"Update results",content:content,sha:sha})
-        });
-      })
-      .catch(function(){});
-    }, 2000);
-  }, [ad]);
+  // Save to GitHub - only called explicitly by admin actions
+  function saveToGitHub(newAd) {
+    var ghToken = localStorage.getItem("porra_gh_token");
+    if(!ghToken) return;
+    fetch(GH_API, {headers:{"Authorization":"token "+ghToken}})
+    .then(function(r){return r.json();})
+    .then(function(fileInfo){
+      var sha = fileInfo.sha;
+      var content = btoa(unescape(encodeURIComponent(JSON.stringify(newAd))));
+      return fetch(GH_API, {
+        method: "PUT",
+        headers: {"Authorization":"token "+ghToken,"Content-Type":"application/json"},
+        body: JSON.stringify({message:"Update results",content:content,sha:sha})
+      });
+    })
+    .then(function(r){return r.json();})
+    .then(function(res){
+      if(res.content) {
+        // Update saved indicator
+        var el = document.getElementById("gh_save_status");
+        if(el){ el.textContent = "✅ Guardado en GitHub"; el.style.color="#22c55e"; setTimeout(function(){el.textContent="";},3000); }
+      }
+    })
+    .catch(function(){
+      var el = document.getElementById("gh_save_status");
+      if(el){ el.textContent = "❌ Error al guardar"; el.style.color="#ef4444"; }
+    });
+  }
 
   var scores = useMemo(function() {
     return Object.entries(PD).map(function(x) {
@@ -787,7 +800,7 @@ function App() {
   }
   if (view === "admin") {
     if (!adminAuth) return h(AdminLogin, {setAdminAuth:setAdminAuth, view:view, setView:setView, setSel:setSel});
-    return h(AdminView, {ad:ad, dispatch:dispatch, kr:kr, adminSection:adminSection, setAdminSection:setAdminSection, view:view, setView:setView, setSel:setSel});
+    return h(AdminView, {ad:ad, dispatch:dispatch, kr:kr, adminSection:adminSection, setAdminSection:setAdminSection, view:view, setView:setView, setSel:setSel, saveToGitHub:saveToGitHub});
   }
 
   if(view==="info"){
