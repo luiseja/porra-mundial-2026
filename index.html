@@ -373,18 +373,20 @@ function AdminLogin(props) {
 function MatchInput(props) {
   var match = props.match, saved = props.saved, dispatch = props.dispatch;
   var ls = useState(saved||""); var localVal = ls[0]; var setLocalVal = ls[1];
-  // Sync if saved changes externally (e.g. after load)
-  useEffect(function(){ setLocalVal(saved||""); }, [saved]);
+  var focusedRef = useRef(false);
+  useEffect(function(){
+    if(!focusedRef.current) setLocalVal(saved||"");
+  }, [saved]);
   function commit(val) {
-    var v = val.trim();
-    dispatch({type:"SET_MATCH", match:match, value:v});
+    dispatch({type:"SET_MATCH", match:match, value:val.trim()});
   }
-  return h("div", {style:{display:"flex",alignItems:"center",padding:"7px 12px",gap:8}},
+  return h("div", {style:{display:"flex",alignItems:"center",padding:"7px 12px",borderBottom:"1px solid #1e2a3a",gap:8}},
     h("div", {style:{flex:1,fontSize:11,color:saved?"#22c55e":"#c0d4e8"}}, match + (saved ? " · " + saved : "")),
     h("input", {value:localVal, placeholder:"0-0",
+      onFocus:function(){focusedRef.current=true;},
       onChange:function(ev){setLocalVal(ev.target.value);},
-      onBlur:function(ev){commit(ev.target.value);},
-      onKeyDown:function(ev){if(ev.key==="Enter"){commit(ev.target.value);ev.target.blur();}},
+      onBlur:function(ev){focusedRef.current=false;commit(ev.target.value);},
+      onKeyDown:function(ev){if(ev.key==="Enter"){commit(localVal);ev.target.blur();}},
       style:{width:52,padding:"4px 6px",borderRadius:6,border:"1px solid #2a3a4a",background:"#0d1117",color:"white",fontSize:12,textAlign:"center"}})
   );
 }
@@ -744,7 +746,15 @@ function StatsView(props){
 
 function App() {
   var vs = useState("ranking"); var view = vs[0]; var setView = vs[1];
-  var as = useState(false); var adminAuth = as[0]; var setAdminAuth = as[1];
+  var as = useState(function(){ return !!(typeof sessionStorage !== "undefined" && sessionStorage.getItem("porra_admin_auth")); });
+  var adminAuth = as[0];
+  var setAdminAuth = function(v) { 
+    as[1](v); 
+    if(typeof sessionStorage !== "undefined") {
+      if(v) sessionStorage.setItem("porra_admin_auth","1");
+      else sessionStorage.removeItem("porra_admin_auth");
+    }
+  };
   var ss = useState("partidos"); var adminSection = ss[0]; var setAdminSection = ss[1];
   var sl = useState(null); var sel = sl[0]; var setSel = sl[1];
   var dt = useState("partidos"); var dTab = dt[0]; var setDTab = dt[1];
