@@ -237,7 +237,7 @@ function DetailView(props) {
         var pred = pl.matches[match]; var real = ad.matches[match]; var rs = real ? getSign(real) : null;
         var st = "pending";
         if (real && pred) st = pred.sign === rs ? (pred.score === real ? "exact" : "sign") : "wrong";
-        var lbl = {exact:"+3",sign:"+2",wrong:"✗",pending:"—"};
+        var lbl = {exact:"+6",sign:"+4",wrong:"✗",pending:"—"};
         return h("div", {key:match, style:{display:"flex",alignItems:"center",padding:"8px 12px",borderBottom:i<AM.length-1?"1px solid #1e2a3a":"none",gap:8}},
           h("div", {style:{flex:1}},
             h("div", {style:{fontSize:12,color:"#c0d4e8"}}, match),
@@ -259,7 +259,7 @@ function DetailView(props) {
               h("span", {style:{color:"#4b6a8a",fontSize:11,minWidth:18}}, (i+1) + "º"),
               h("span", {style:{fontSize:12,color:hit?"#22c55e":"#c0d4e8",flex:1}}, pp[i] || "—"),
               rp[i] ? h("span", {style:{fontSize:10,color:"#4b6a8a"}}, rp[i]) : null,
-              rp[i] ? h("span", {style:{fontWeight:700,color:hit?"#22c55e":"#ef4444",fontSize:11}}, hit ? "+2" : "✗") : null
+              rp[i] ? h("span", {style:{fontWeight:700,color:hit?"#22c55e":"#ef4444",fontSize:11}}, hit ? "+4" : "✗") : null
             );
           })
         );
